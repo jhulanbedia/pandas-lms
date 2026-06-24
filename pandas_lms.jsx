@@ -1,0 +1,1305 @@
+import { useState } from "react";
+
+// ─── ALL COURSES & LESSONS FROM CONVERSATION ───────────────────────────────
+
+const COURSES = [
+  {
+    id: 1, title: "Pandas का परिचय", icon: "🐼", color: "#534AB7", bg: "#EEEDFE",
+    lessons: [
+      {
+        id: "1-1", title: "Pandas क्या है? Install और Import",
+        content: "Pandas एक Python library है जो data analysis के लिए use होती है। इसमें दो मुख्य structures हैं — Series और DataFrame।",
+        code:
+`# Install करें
+pip install pandas
+
+# Import करें
+import pandas as pd
+import numpy as np
+
+# pandas को हमेशा pd नाम से import करते हैं — यह convention है`,
+        tip: "pandas को हमेशा pd नाम से import करते हैं — यह standard convention है।"
+      },
+      {
+        id: "1-2", title: "Series — 1D Data Structure",
+        content: "Series एक single column की तरह होता है — values + index के साथ। यह 1-Dimensional होता है।",
+        code:
+`# Basic Series
+s = pd.Series([10, 20, 30, 40])
+print(s)
+# 0    10
+# 1    20
+# 2    30
+# 3    40
+# dtype: int64
+
+# Custom Index के साथ
+s = pd.Series([85, 92, 78],
+              index=['Math', 'Science', 'Hindi'])
+print(s['Math'])   # → 85
+
+# Dictionary से Series बनाना
+s = pd.Series({'a': 1, 'b': 2, 'c': 3})`,
+        tip: "Series को dictionary से भी बना सकते हैं: pd.Series({'a': 1, 'b': 2})"
+      },
+      {
+        id: "1-3", title: "DataFrame — 2D Table बनाना",
+        content: "DataFrame एक table (rows + columns) होता है — Excel sheet की तरह। यह pandas का सबसे important structure है।",
+        code:
+`data = {
+    'नाम':  ['Ravi', 'Priya', 'Amit'],
+    'उम्र': [25, 30, 22],
+    'शहर':  ['Delhi', 'Mumbai', 'Pune']
+}
+df = pd.DataFrame(data)
+print(df)
+#     नाम  उम्र    शहर
+# 0   Ravi    25   Delhi
+# 1  Priya    30  Mumbai
+# 2   Amit    22    Pune`,
+        tip: "DataFrame हमेशा dictionary से बनता है — keys = column names, values = lists।"
+      },
+      {
+        id: "1-4", title: "DataFrame के जरूरी Commands",
+        content: "DataFrame लोड होते ही कुछ basic commands से data को समझो।",
+        code:
+`df.head()       # पहली 5 rows
+df.head(10)     # पहली 10 rows
+df.tail(3)      # आखिरी 3 rows
+df.shape        # (rows, columns) — जैसे (100, 5)
+df.info()       # column names, types, null count
+df.describe()   # count, mean, std, min, max
+df.columns      # सारे column names
+df.dtypes       # हर column का data type`,
+        tip: "df.head() और df.describe() हमेशा सबसे पहले run करें — data को समझने के लिए।"
+      },
+      {
+        id: "1-5", title: "Data पढ़ना — CSV, Excel, JSON",
+        content: "Pandas CSV, Excel, JSON आदि files आसानी से पढ़ सकता है।",
+        code:
+`# CSV पढ़ना
+df = pd.read_csv('data.csv')
+df = pd.read_csv('data.csv', encoding='utf-8')
+
+# Excel पढ़ना
+df = pd.read_excel('data.xlsx', sheet_name='Sheet1')
+
+# JSON पढ़ना
+df = pd.read_json('data.json')
+
+# File save करना
+df.to_csv('output.csv', index=False)
+df.to_excel('output.xlsx', index=False)`,
+        tip: "index=False लगाओ वरना CSV में extra index column आ जाएगा।"
+      },
+      {
+        id: "1-6", title: "Rows और Columns Select करना",
+        content: "DataFrame से specific rows और columns निकालना सीखो।",
+        code:
+`# Single column
+df['नाम']
+
+# Multiple columns
+df[['नाम', 'उम्र']]
+
+# Rows — index number से (iloc)
+df.iloc[0]      # पहली row
+df.iloc[1:4]    # rows 1 से 3 तक
+df.iloc[0, 1]   # row 0, column 1 की value
+
+# Rows — label से (loc)
+df.loc[2]         # index label 2 वाली row
+df.loc[0:2, 'नाम']  # rows 0-2 की नाम column`,
+        tip: "iloc = integer position (number से), loc = label से। यह difference याद रखो।"
+      },
+      {
+        id: "1-7", title: "Data Filter करना",
+        content: "Conditions लगाकर specific rows निकालें।",
+        code:
+`# Basic Filter
+df[df['उम्र'] > 25]           # उम्र 25 से ज्यादा
+df[df['शहर'] == 'Delhi']      # Delhi वाले
+
+# AND condition (&)
+df[(df['उम्र'] > 20) & (df['शहर'] == 'Delhi')]
+
+# OR condition (|)
+df[(df['शहर'] == 'Delhi') | (df['शहर'] == 'Mumbai')]
+
+# isin() — multiple values
+df[df['शहर'].isin(['Delhi', 'Mumbai'])]
+
+# Null values handle करना
+df.isnull().sum()    # null count per column
+df.dropna()          # null rows हटाना
+df.fillna(0)         # null को 0 से भरना`,
+        tip: "AND के लिए & और OR के लिए | use करो — Python के and/or नहीं।"
+      },
+    ]
+  },
+  {
+    id: 2, title: "Sorting और Merge", icon: "🔀", color: "#0F6E56", bg: "#E1F5EE",
+    lessons: [
+      {
+        id: "2-1", title: "sort_values() — Value से Sort",
+        content: "DataFrame को किसी भी column की value के आधार पर sort करें।",
+        code:
+`# Ascending (छोटे से बड़े) — default
+df.sort_values('उम्र')
+
+# Descending (बड़े से छोटे)
+df.sort_values('उम्र', ascending=False)
+
+# Multiple columns से sort
+df.sort_values(['शहर', 'उम्र'],
+               ascending=[True, False])
+# पहले शहर A-Z, फिर उम्र Z-A
+
+# NaN को handle करना
+df.sort_values('उम्र', na_position='last')   # NaN अंत में
+df.sort_values('उम्र', na_position='first')  # NaN शुरू में
+
+# Index reset करना
+df.sort_values('उम्र').reset_index(drop=True)
+
+# inplace=True — original df बदलता है
+df.sort_values('उम्र', inplace=True)`,
+        tip: "sort के बाद index बदल जाता है। reset_index(drop=True) से clean index मिलता है।"
+      },
+      {
+        id: "2-2", title: "sort_index() — Index से Sort",
+        content: "Row index या column names को alphabetically/numerically sort करें।",
+        code:
+`# Row index sort करना
+df.sort_index()                   # ascending
+df.sort_index(ascending=False)    # descending
+
+# Column names sort करना (axis=1)
+df.sort_index(axis=1)             # columns A-Z
+
+# Time series के साथ
+df.index = pd.to_datetime(df.index)
+df.sort_index()   # date order में`,
+        tip: "sort_values → किसी column की value से। sort_index → row numbers या labels से।"
+      },
+      {
+        id: "2-3", title: "merge() — Common Key से जोड़ना",
+        content: "SQL के JOIN की तरह — एक common column (key) से दो DataFrames को मिलाओ।",
+        code:
+`df1 = pd.DataFrame({
+    'id':  [1, 2, 3],
+    'नाम': ['Ravi', 'Priya', 'Amit']
+})
+df2 = pd.DataFrame({
+    'id':     [1, 2, 4],
+    'salary': [50000, 70000, 60000]
+})
+
+# Default: inner join
+result = pd.merge(df1, df2, on='id')
+#    id   नाम  salary
+# 0   1  Ravi   50000
+# 1   2  Priya  70000
+# (id=3 और id=4 गायब — match नहीं हुआ)
+
+# अलग-अलग column names हों तो
+pd.merge(df1, df2, left_on='emp_id', right_on='id')`,
+        tip: "merge सिर्फ वो rows रखता है जो दोनों tables में match हों (inner join default)।"
+      },
+      {
+        id: "2-4", title: "Join के 4 Types",
+        content: "how= parameter से join type चुनो — inner, left, right, outer।",
+        code:
+`# INNER — दोनों में match होने वाली rows
+pd.merge(df1, df2, on='id', how='inner')
+
+# LEFT — df1 की सारी rows, right में NaN अगर match नहीं
+pd.merge(df1, df2, on='id', how='left')
+#    id   नाम   salary
+# 0   1  Ravi  50000.0
+# 1   2  Priya 70000.0
+# 2   3  Amit      NaN  ← match नहीं
+
+# RIGHT — df2 की सारी rows
+pd.merge(df1, df2, on='id', how='right')
+
+# OUTER — दोनों की सारी rows, जहाँ match नहीं वहाँ NaN
+pd.merge(df1, df2, on='id', how='outer')`,
+        tip: "याद रखो: inner = intersection (∩), outer = union (∪)।"
+      },
+      {
+        id: "2-5", title: "concat() — Stack करना",
+        content: "बिना key के tables को ऊपर-नीचे या side-by-side जोड़ो।",
+        code:
+`# Rows जोड़ना (vertically — ऊपर-नीचे)
+df_all = pd.concat([df1, df2])
+df_all = pd.concat([df1, df2], ignore_index=True)  # index reset
+
+# Columns जोड़ना (horizontally — side by side)
+df_wide = pd.concat([df1, df2], axis=1)
+
+# Duplicates हटाना
+df_all.drop_duplicates()
+
+# merge vs concat
+# merge → common key से जोड़ना (students + marks by roll_no)
+# concat → same structure stack करना (Jan + Feb + Mar data)`,
+        tip: "concat के बाद duplicates हो सकते हैं — drop_duplicates() से हटाओ।"
+      },
+    ]
+  },
+  {
+    id: 3, title: "Pivot Table", icon: "📊", color: "#993C1D", bg: "#FAECE7",
+    lessons: [
+      {
+        id: "3-1", title: "Pivot Table क्या है?",
+        content: "Pivot table data को reshape करती है — rows को columns में बदलती है। Excel की pivot table जैसा।",
+        code:
+`# Sample data
+data = {
+    'महीना':  ['Jan', 'Jan', 'Feb', 'Feb', 'Jan', 'Feb'],
+    'शहर':    ['Delhi', 'Mumbai', 'Delhi', 'Mumbai', 'Delhi', 'Mumbai'],
+    'product': ['Mobile', 'Laptop', 'Mobile', 'Mobile', 'Laptop', 'Laptop'],
+    'बिक्री':  [50000, 80000, 60000, 45000, 90000, 75000]
+}
+df = pd.DataFrame(data)
+
+# Pivot करने पर:
+# product   Laptop  Mobile
+# शहर
+# Delhi      90000  110000
+# Mumbai    155000   45000`,
+        tip: "Pivot = rows को groups में बाँटना + values को aggregate करना।"
+      },
+      {
+        id: "3-2", title: "pivot_table() — Basic Syntax",
+        content: "चार मुख्य parameters: values, index, columns, aggfunc।",
+        code:
+`df.pivot_table(
+    values='बिक्री',     # कौन सी values aggregate होंगी
+    index='शहर',         # rows में क्या आएगा
+    columns='product',   # columns में क्या आएगा
+    aggfunc='sum'        # कैसे aggregate होगा
+)
+# product   Laptop  Mobile
+# शहर
+# Delhi      90000  110000
+# Mumbai    155000   45000
+
+# Multiple index (दो levels)
+df.pivot_table(
+    values='बिक्री',
+    index=['महीना', 'शहर'],   # दो levels!
+    columns='product',
+    aggfunc='sum'
+)`,
+        tip: "NaN का मतलब — उस combination में कोई data नहीं था।"
+      },
+      {
+        id: "3-3", title: "aggfunc और fill_value",
+        content: "aggfunc बताता है कि multiple values को कैसे combine करें। fill_value से NaN हटाओ।",
+        code:
+`# एक function
+df.pivot_table(values='बिक्री', index='शहर',
+               columns='product', aggfunc='mean')
+
+# Multiple functions एक साथ
+df.pivot_table(values='बिक्री', index='शहर',
+               aggfunc=['sum', 'mean', 'count'])
+
+# हर column के लिए अलग function
+df.pivot_table(
+    index='शहर',
+    aggfunc={
+        'बिक्री': 'sum',    # बिक्री का कुल
+        'units':  'mean'    # units का average
+    }
+)
+
+# NaN को 0 से भरना
+df.pivot_table(
+    values='बिक्री', index='शहर',
+    columns='product', aggfunc='sum',
+    fill_value=0
+)`,
+        tip: "fill_value=0 से NaN हट जाते हैं — बड़े datasets में जरूरी है।"
+      },
+      {
+        id: "3-4", title: "margins — Grand Total जोड़ना",
+        content: "Excel pivot table की तरह Row और Column totals add करें।",
+        code:
+`df.pivot_table(
+    values='बिक्री',
+    index='शहर',
+    columns='product',
+    aggfunc='sum',
+    fill_value=0,
+    margins=True,          # Total row/column जोड़ो
+    margins_name='कुल'     # "All" की जगह custom नाम
+)
+# product  Laptop  Mobile    कुल
+# शहर
+# Delhi     90000  110000  200000
+# Mumbai   155000   45000  200000
+# कुल      245000  155000  400000
+
+# Pivot से data निकालना
+pt = df.pivot_table(...)
+pt.loc['Delhi']              # Delhi की सारी values
+pt['Mobile']                 # Mobile column
+pt.loc['Delhi', 'Laptop']    # specific value
+pt.sort_values('Mobile', ascending=False)`,
+        tip: "Pivot table एक normal DataFrame होता है — सभी pandas operations उस पर काम करती हैं।"
+      },
+      {
+        id: "3-5", title: "crosstab() — Count के लिए Shortcut",
+        content: "crosstab pivot_table का छोटा version है — frequency/count देखने के लिए।",
+        code:
+`# Basic crosstab (count)
+pd.crosstab(df['शहर'], df['product'])
+# product  Laptop  Mobile
+# शहर
+# Delhi         1       2
+# Mumbai        2       1
+
+# Row-wise percentage
+pd.crosstab(df['शहर'], df['product'],
+            normalize='index')
+# product  Laptop  Mobile
+# Delhi      0.33    0.67
+# Mumbai     0.67    0.33
+
+# Column-wise percentage
+pd.crosstab(df['शहर'], df['product'],
+            normalize='columns')
+
+# पूरे table का percentage
+pd.crosstab(df['शहर'], df['product'],
+            normalize='all')`,
+        tip: "pivot_table → calculations चाहिए। crosstab → सिर्फ count/frequency देखनी हो।"
+      },
+    ]
+  },
+  {
+    id: 4, title: "Matplotlib Graphs", icon: "📈", color: "#185FA5", bg: "#E6F1FB",
+    lessons: [
+      {
+        id: "4-1", title: "Setup — Import और दो तरीके",
+        content: "Pandas में .plot() method built-in है। दो तरीकों से graph बना सकते हो।",
+        code:
+`import matplotlib.pyplot as plt
+
+# Jupyter Notebook में inline graphs के लिए
+%matplotlib inline
+
+# तरीका 1 — Pandas shortcut (कम code)
+df.plot(x='महीना', y='बिक्री')
+plt.show()
+
+# तरीका 2 — Matplotlib directly (ज्यादा control)
+plt.plot(df['महीना'], df['बिक्री'])
+plt.show()
+
+# Sample data
+data = {
+    'महीना':  ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+    'Delhi':  [50, 65, 80, 72, 90],
+    'Mumbai': [40, 55, 70, 85, 78]
+}
+df = pd.DataFrame(data)
+df = df.set_index('महीना')  # महीना को index बनाओ`,
+        tip: "Index को x-axis के रूप में use किया जाता है — इसलिए set_index() जरूरी है।"
+      },
+      {
+        id: "4-2", title: "Line Graph — Trend देखना",
+        content: "समय के साथ बदलाव दिखाने के लिए — monthly sales, temperature आदि।",
+        code:
+`# Basic line graph
+df.plot(kind='line')   # या सिर्फ df.plot()
+plt.title('शहर-wise बिक्री')
+plt.xlabel('महीना')
+plt.ylabel('बिक्री (हजार)')
+plt.show()
+
+# Customize करना
+df['Delhi'].plot(
+    kind='line',
+    color='#534AB7',     # रंग
+    linewidth=2,         # line की मोटाई
+    linestyle='--',      # dashed line
+    marker='o',          # हर point पर circle
+    markersize=6
+)
+plt.legend()
+plt.show()`,
+        tip: "df.plot() automatically सभी numeric columns को अलग-अलग lines में दिखाता है।"
+      },
+      {
+        id: "4-3", title: "Bar Chart — Comparison",
+        content: "Categories की तुलना करने के लिए — शहरों की बिक्री, products की performance।",
+        code:
+`# Vertical bar (default)
+df.plot(kind='bar')
+plt.title('Monthly Sales')
+plt.xticks(rotation=0)    # x labels सीधे रखो
+plt.tight_layout()
+plt.show()
+
+# Horizontal bar
+df.plot(kind='barh')   # h = horizontal
+plt.show()
+
+# Stacked bar
+df.plot(kind='bar', stacked=True)
+plt.show()
+# stacked=True से दोनों शहरों की बिक्री एक ही bar में`,
+        tip: "stacked=True से total देखना आसान होता है।"
+      },
+      {
+        id: "4-4", title: "Pie Chart और Scatter Plot",
+        content: "Proportion देखने के लिए Pie, relationship देखने के लिए Scatter।",
+        code:
+`# Pie chart
+total = df.sum()   # हर शहर का कुल
+total.plot(
+    kind='pie',
+    autopct='%1.1f%%',    # percentage label
+    startangle=90,
+    colors=['#7F77DD', '#1D9E75']
+)
+plt.ylabel('')     # default ylabel हटाओ
+plt.title('शहर-wise कुल बिक्री')
+plt.show()
+
+# Scatter plot
+df2 = pd.DataFrame({
+    'उम्र':   [22, 25, 30, 35, 40, 28],
+    'salary': [25, 35, 50, 70, 80, 45]
+})
+df2.plot(kind='scatter', x='उम्र', y='salary',
+         color='#534AB7', s=80)   # s = point size
+plt.title('उम्र vs Salary')
+plt.show()`,
+        tip: "Scatter plot दो numeric columns के बीच का relationship दिखाता है।"
+      },
+      {
+        id: "4-5", title: "Graph Styling — Title, Labels, Grid",
+        content: "Graph को professional बनाओ — title, labels, colors, legend, grid।",
+        code:
+`fig, ax = plt.subplots(figsize=(10, 5))   # size set करो
+
+df.plot(kind='line', ax=ax,
+        color=['#534AB7', '#1D9E75'],
+        linewidth=2, marker='o')
+
+ax.set_title('Monthly Sales 2024', fontsize=16, pad=15)
+ax.set_xlabel('महीना', fontsize=12)
+ax.set_ylabel('बिक्री (हजार ₹)', fontsize=12)
+ax.legend(['Delhi', 'Mumbai'], loc='upper left')
+ax.grid(True, alpha=0.3)           # हल्की grid lines
+ax.spines['top'].set_visible(False)    # border हटाओ
+ax.spines['right'].set_visible(False)
+
+plt.tight_layout()
+plt.savefig('sales.png', dpi=150)    # file में save
+plt.show()`,
+        tip: "plt.tight_layout() से graphs overlap नहीं होते।"
+      },
+      {
+        id: "4-6", title: "Subplots — एक साथ कई Graphs",
+        content: "एक figure में multiple graphs side-by-side या ऊपर-नीचे दिखाओ।",
+        code:
+`# Pandas shortcut
+df.plot(subplots=True, figsize=(10, 6), layout=(2, 1))
+# हर column का अलग graph
+plt.tight_layout()
+plt.show()
+
+# Manual subplots — 3 graphs side by side
+fig, axes = plt.subplots(1, 3, figsize=(15, 4))
+
+df.plot(kind='line', ax=axes[0], title='Line')
+df.plot(kind='bar',  ax=axes[1], title='Bar')
+df.plot(kind='area', ax=axes[2], title='Area', alpha=0.5)
+
+plt.tight_layout()
+plt.show()
+
+# सभी graph types
+# 'line'    → trend
+# 'bar'     → comparison
+# 'barh'    → horizontal bar
+# 'pie'     → proportion
+# 'scatter' → relationship
+# 'hist'    → distribution
+# 'area'    → stacked trend
+# 'box'     → spread/outliers`,
+        tip: "हर axes[i] को अलग graph दो — इससे एक figure में सब compare होता है।"
+      },
+    ]
+  },
+  {
+    id: 5, title: "apply() और Lambda", icon: "⚡", color: "#854F0B", bg: "#FAEEDA",
+    lessons: [
+      {
+        id: "5-1", title: "Lambda Function क्या है?",
+        content: "Lambda एक छोटा, nameless function होता है — एक ही line में। जब function एक बार ही use करना हो।",
+        code:
+`# Normal function
+def double(x):
+    return x * 2
+double(5)   # → 10
+
+# Lambda (same काम, एक line में)
+double = lambda x: x * 2
+double(5)   # → 10
+
+# Lambda की structure:
+# lambda arguments : expression
+
+# एक argument
+lambda x: x + 10
+
+# दो arguments
+lambda x, y: x + y
+
+# Condition के साथ (if-else)
+lambda x: 'Pass' if x >= 40 else 'Fail'
+
+# String operation
+lambda x: x.upper()`,
+        tip: "Lambda में सिर्फ एक expression हो सकता है — if/else हाँ, for loop नहीं।"
+      },
+      {
+        id: "5-2", title: "apply() — Column पर Function चलाना",
+        content: "apply() DataFrame के हर element पर एक function apply करता है। pandas का सबसे powerful tool।",
+        code:
+`df = pd.DataFrame({
+    'नाम':    ['ravi', 'priya', 'amit'],
+    'salary': [30000, 45000, 28000]
+})
+
+# नाम को Capital करो
+df['नाम'] = df['नाम'].apply(lambda x: x.upper())
+
+# 10% bonus जोड़ो
+df['bonus'] = df['salary'].apply(lambda x: x * 0.10)
+
+# Result:
+#     नाम  salary   bonus
+# 0   RAVI   30000  3000.0
+# 1  PRIYA   45000  4500.0
+# 2   AMIT   28000  2800.0
+
+# Regular def function भी चलेगा
+def grade(marks):
+    if marks >= 90:  return 'A'
+    elif marks >= 75: return 'B'
+    else: return 'C'
+
+df['grade'] = df['marks'].apply(grade)`,
+        tip: "Complex logic → def function। Simple calculation → lambda।"
+      },
+      {
+        id: "5-3", title: "apply() Row-wise — axis=1",
+        content: "axis=1 से हर row पर function चलाओ — एक साथ कई columns use कर सकते हो।",
+        code:
+`df = pd.DataFrame({
+    'first_name': ['Ravi', 'Priya', 'Amit'],
+    'last_name':  ['Kumar', 'Sharma', 'Singh'],
+    'math':       [85, 92, 78],
+    'science':    [78, 88, 95]
+})
+
+# Full name बनाओ (दो columns मिलाओ)
+df['full_name'] = df.apply(
+    lambda row: row['first_name'] + ' ' + row['last_name'],
+    axis=1
+)
+
+# Average निकालो
+df['avg'] = df.apply(
+    lambda row: (row['math'] + row['science']) / 2,
+    axis=1
+)
+
+# Pass/Fail — दोनों में 40+ चाहिए
+df['result'] = df.apply(
+    lambda row: 'Pass'
+        if row['math'] >= 40 and row['science'] >= 40
+        else 'Fail',
+    axis=1
+)`,
+        tip: "axis=1 भूल गए? Error आएगा। Row-wise apply में यह जरूरी है।"
+      },
+      {
+        id: "5-4", title: "Real-life apply() Examples",
+        content: "असली काम में apply() और lambda कहाँ-कहाँ use होते हैं।",
+        code:
+`# 1. Salary slab बनाना
+df['slab'] = df['salary'].apply(
+    lambda x: 'Low'    if x < 30000
+         else 'Medium' if x < 60000
+         else 'High'
+)
+
+# 2. Text cleaning
+df['नाम'] = df['नाम'].apply(lambda x: x.strip().title())
+# "  ravi kumar  " → "Ravi Kumar"
+
+df['phone'] = df['phone'].apply(
+    lambda x: x.replace('-', ''))
+# "98765-43210" → "9876543210"
+
+# 3. GST calculate करना (row-wise)
+def calc_gst(row):
+    rate = 0.18 if row['category'] == 'Electronics' else 0.05
+    return row['price'] * rate
+df['gst'] = df.apply(calc_gst, axis=1)
+
+# 4. Date से month/year निकालना
+df['date'] = pd.to_datetime(df['date'])
+df['month'] = df['date'].apply(lambda x: x.month)
+df['year']  = df['date'].apply(lambda x: x.year)
+
+# 5. List column से value निकालना
+df['first_item'] = df['items'].apply(lambda x: x[0])
+df['total']      = df['items'].apply(lambda x: sum(x))`,
+        tip: "JSON/API data में अक्सर dict/list columns होते हैं — apply() से आसानी से निकालो।"
+      },
+      {
+        id: "5-5", title: "map() और applymap()",
+        content: "apply() के अलावा दो और similar functions — कब कौन सा use करें।",
+        code:
+`# map() — Series पर, values replace करने के लिए
+df['grade'] = df['grade'].map({
+    'A': 'Excellent',
+    'B': 'Good',
+    'C': 'Average'
+})
+
+# map() Lambda के साथ भी
+df['salary'].map(lambda x: x * 1.1)
+
+# df.map() — पूरे DataFrame पर (pandas 2.1+)
+df.map(lambda x: str(x).upper())
+
+# पुराना तरीका (pandas < 2.1)
+df.applymap(lambda x: str(x).upper())
+
+# तीनों का comparison:
+# apply()   → Series या DataFrame, row/column logic
+# map()     → सिर्फ Series, values replace
+# df.map()  → पूरा DataFrame, हर cell पर same function
+
+# Performance tip:
+# यह SLOW है:
+df['total'] = df['price'].apply(lambda x: x * 1.18)
+# यह FAST है (vectorized):
+df['total'] = df['price'] * 1.18`,
+        tip: "Simple math के लिए apply() की जरूरत नहीं — सीधे arithmetic operation ज्यादा fast।"
+      },
+    ]
+  },
+  {
+    id: 6, title: "Seaborn Graphs", icon: "🎨", color: "#3B6D11", bg: "#EAF3DE",
+    lessons: [
+      {
+        id: "6-1", title: "Setup — Seaborn vs Matplotlib",
+        content: "Seaborn, matplotlib के ऊपर बना है — कम code में ज्यादा सुंदर graphs। Statistical visualizations के लिए best।",
+        code:
+`pip install seaborn
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# Matplotlib में bar chart — 6 lines
+colors = ['blue', 'red', 'green']
+plt.bar(df['शहर'], df['बिक्री'], color=colors)
+plt.xlabel('शहर')
+plt.ylabel('बिक्री')
+plt.show()
+
+# Seaborn में same graph — 2 lines
+sns.barplot(data=df, x='शहर', y='बिक्री')
+plt.show()
+
+# Built-in datasets (practice के लिए)
+tips    = sns.load_dataset('tips')      # restaurant bills
+iris    = sns.load_dataset('iris')      # flowers
+titanic = sns.load_dataset('titanic')  # passengers
+flights = sns.load_dataset('flights')  # air traffic`,
+        tip: "matplotlib का plt.show() seaborn के साथ भी जरूरी है।"
+      },
+      {
+        id: "6-2", title: "Distribution Plots — Data का फैलाव",
+        content: "एक numeric column की distribution (फैलाव) देखने के लिए।",
+        code:
+`tips = sns.load_dataset('tips')
+
+# histplot — frequency distribution
+sns.histplot(data=tips, x='total_bill', bins=20)
+plt.title('Bill Distribution')
+plt.show()
+
+# kdeplot — smooth curve
+sns.kdeplot(data=tips, x='total_bill',
+            hue='sex',       # Male/Female अलग रंग में
+            fill=True,       # curve के नीचे color
+            alpha=0.5)
+plt.show()
+
+# boxplot — outliers और spread
+sns.boxplot(data=tips, x='day', y='total_bill',
+            hue='smoker', palette='Set2')
+plt.show()
+
+# violinplot — distribution + boxplot एक साथ
+sns.violinplot(data=tips, x='day', y='tip',
+               hue='sex', split=True)
+plt.show()`,
+        tip: "hue= parameter किसी भी seaborn graph में color grouping देता है — बहुत powerful!"
+      },
+      {
+        id: "6-3", title: "Categorical Plots — Categories Compare",
+        content: "Categories की तुलना करने के लिए — barplot, countplot, stripplot।",
+        code:
+`# barplot — average दिखाता है (count नहीं!)
+sns.barplot(data=tips, x='day', y='total_bill',
+            hue='sex', palette='muted')
+plt.title('Day-wise Average Bill')
+plt.show()
+
+# countplot — count दिखाता है
+sns.countplot(data=tips, x='day', hue='smoker')
+# हर दिन कितने customers आए
+plt.show()
+
+# stripplot — हर data point दिखाओ
+sns.stripplot(data=tips, x='day', y='tip',
+              hue='sex', dodge=True, alpha=0.7)
+plt.show()
+
+# swarmplot — points overlap नहीं होते
+sns.swarmplot(data=tips, x='day', y='tip')
+plt.show()`,
+        tip: "barplot seaborn में MEAN दिखाता है, matplotlib में height। यह confusing है — ध्यान रखो।"
+      },
+      {
+        id: "6-4", title: "Relationship Plots — दो Columns का Relation",
+        content: "दो numeric variables के बीच relationship देखो।",
+        code:
+`# scatterplot
+sns.scatterplot(data=tips,
+    x='total_bill', y='tip',
+    hue='smoker',    # color grouping
+    size='size',     # table size से point बड़ा-छोटा
+    style='sex')     # shape अलग करो
+plt.show()
+
+# regplot — scatter + regression line एक साथ
+sns.regplot(data=tips, x='total_bill', y='tip',
+            scatter_kws={'alpha': 0.5},
+            line_kws={'color': 'red'})
+# Trend line automatically बनती है
+plt.show()
+
+# pairplot — सारे columns का आपस में relation
+iris = sns.load_dataset('iris')
+sns.pairplot(iris, hue='species')
+# हर column का हर दूसरे से scatter + histogram
+plt.show()`,
+        tip: "pairplot() EDA (Exploratory Data Analysis) के लिए best है — एक line में पूरा overview।"
+      },
+      {
+        id: "6-5", title: "Heatmap — Correlation Matrix",
+        content: "कौन सी columns एक-दूसरे से related हैं — color से देखो।",
+        code:
+`tips = sns.load_dataset('tips')
+
+# Correlation matrix बनाओ
+corr = tips.select_dtypes('number').corr()
+
+# Heatmap
+sns.heatmap(corr,
+    annot=True,        # numbers दिखाओ
+    fmt='.2f',         # 2 decimal places
+    cmap='coolwarm',   # blue=negative, red=positive
+    center=0,          # 0 पर white
+    square=True)
+plt.title('Correlation Matrix')
+plt.show()
+
+# Pivot table से heatmap
+flights = sns.load_dataset('flights')
+pt = flights.pivot_table(
+    values='passengers',
+    index='month', columns='year')
+sns.heatmap(pt, cmap='YlOrRd',
+            annot=True, fmt='d')
+plt.show()
+
+# Correlation value का मतलब:
+# 1.0  = perfect positive (साथ बढ़ते हैं)
+# -1.0 = perfect negative (उलटा)
+# 0    = कोई relation नहीं
+# 0.7+ = strong correlation`,
+        tip: "Correlation 0.7+ को strong मानते हैं। coolwarm colormap में लाल = positive, नीला = negative।"
+      },
+      {
+        id: "6-6", title: "Themes, Colors और Styling",
+        content: "Seaborn में built-in themes से एक line में पूरा look बदलो।",
+        code:
+`# 5 built-in themes
+sns.set_theme(style='darkgrid')    # dark background + grid
+sns.set_theme(style='whitegrid')   # white + grid (popular)
+sns.set_theme(style='dark')        # dark, no grid
+sns.set_theme(style='white')       # clean white
+sns.set_theme(style='ticks')       # minimal, ticks only
+
+# Color palettes
+sns.set_palette('deep')       # default
+sns.set_palette('muted')      # soft colors
+sns.set_palette('bright')     # vibrant
+sns.set_palette('pastel')     # light/pastel
+sns.set_palette('colorblind') # accessible
+
+# Custom colors
+sns.set_palette(['#534AB7', '#1D9E75', '#D85A30'])
+
+# Figure size और font scale
+sns.set_theme(style='whitegrid', font_scale=1.2)
+plt.figure(figsize=(10, 6))
+
+sns.barplot(data=tips, x='day', y='total_bill')
+plt.title('Sales by Day', fontsize=16, pad=15)
+plt.tight_layout()
+plt.savefig('graph.png', dpi=150, bbox_inches='tight')
+plt.show()`,
+        tip: "sns.set_theme() को script के शुरू में एक बार लगाओ — पूरे code पर apply होगा।"
+      },
+    ]
+  },
+];
+
+// ─── QUIZ (conversation के सभी topics से) ────────────────────────────────────
+
+const QUIZ = [
+  { q: "pandas को import करते समय कौन सा alias use करते हैं?", opts: ["pd", "pn", "pan", "p"], ans: 0 },
+  { q: "DataFrame की shape देखने के लिए?", opts: ["df.size()", "df.shape", "df.count()", "df.len()"], ans: 1 },
+  { q: "Series बनाने के लिए?", opts: ["pd.DataFrame([1,2,3])", "pd.Series([1,2,3])", "pd.Array([1,2,3])", "pd.Column([1,2,3])"], ans: 1 },
+  { q: "iloc और loc में क्या फर्क है?", opts: ["कोई फर्क नहीं", "iloc number से, loc label से", "loc number से, iloc label से", "iloc rows के लिए, loc columns के लिए"], ans: 1 },
+  { q: "df[df['उम्र'] > 25] में & और | का मतलब क्या है?", opts: ["Addition और Subtraction", "AND और OR", "Greater और Less", "True और False"], ans: 1 },
+  { q: "sort_values() में descending order के लिए?", opts: ["order=False", "ascending=False", "reverse=True", "desc=True"], ans: 1 },
+  { q: "merge() का default join type क्या है?", opts: ["left", "right", "inner", "outer"], ans: 2 },
+  { q: "concat() में columns side by side जोड़ने के लिए?", opts: ["axis=0", "axis=1", "axis='col'", "horizontal=True"], ans: 1 },
+  { q: "pivot_table में NaN की जगह 0 भरने के लिए?", opts: ["na_value=0", "replace_na=0", "fill_value=0", "fillna=0"], ans: 2 },
+  { q: "crosstab() सबसे अच्छा किसके लिए है?", opts: ["Sum calculate करना", "Mean निकालना", "Count/Frequency देखना", "Data sort करना"], ans: 2 },
+  { q: "Matplotlib में graph दिखाने के लिए आखिर में क्या लिखते हैं?", opts: ["plt.display()", "plt.render()", "plt.show()", "plt.view()"], ans: 2 },
+  { q: "df.plot(kind='barh') में h का मतलब?", opts: ["Height", "Horizontal", "Heavy", "High"], ans: 1 },
+  { q: "lambda x: 'Pass' if x >= 40 else 'Fail' — यह क्या है?", opts: ["Normal function", "Class method", "One-liner lambda function", "Loop"], ans: 2 },
+  { q: "apply() में row-wise operation के लिए?", opts: ["axis=0", "axis=1", "axis='row'", "row=True"], ans: 1 },
+  { q: "Simple math के लिए apply() की जगह क्या बेहतर है?", opts: ["map()", "applymap()", "Direct vectorized operation", "loop"], ans: 2 },
+  { q: "Seaborn में color grouping के लिए कौन सा parameter?", opts: ["color=", "group=", "hue=", "palette="], ans: 2 },
+  { q: "sns.barplot() seaborn में क्या दिखाता है?", opts: ["Total sum", "Count", "Mean (average)", "Median"], ans: 2 },
+  { q: "Correlation heatmap के लिए?", opts: ["sns.corr()", "sns.matrix()", "sns.heatmap()", "sns.heat()"], ans: 2 },
+  { q: "pairplot() किसके लिए best है?", opts: ["एक column का histogram", "सारे columns का आपस में relation (EDA)", "Time series", "Pie chart"], ans: 1 },
+  { q: "Seaborn theme set करने के लिए?", opts: ["sns.theme()", "sns.set_theme()", "sns.style()", "sns.set_style()"], ans: 1 },
+];
+
+// ─── COMPONENTS ──────────────────────────────────────────────────────────────
+
+function ProgressBar({ val, max, color }) {
+  const pct = max === 0 ? 0 : Math.round((val / max) * 100);
+  return (
+    <div style={{ background: "#e8e8e8", borderRadius: 99, height: 6, width: "100%" }}>
+      <div style={{ width: `${pct}%`, background: color, borderRadius: 99, height: 6, transition: "width 0.5s ease" }} />
+    </div>
+  );
+}
+
+function CodeBlock({ code }) {
+  const [copied, setCopied] = useState(false);
+  const copy = () => {
+    try { navigator.clipboard.writeText(code); } catch {}
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1600);
+  };
+  const hi = code
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/\b(import|from|as|def|return|if|elif|else|True|False|print|lambda|for|in|and|or|not|pass|class|with|try|except)\b/g,
+      '<span style="color:#CBA6F7;font-weight:500">$1</span>')
+    .replace(/('[^'\n]*'|"[^"\n]*")/g, '<span style="color:#A6E3A1">$1</span>')
+    .replace(/(#[^\n]*)/g, '<span style="color:#6C7086;font-style:italic">$1</span>')
+    .replace(/\b(\d+\.?\d*)\b(?![^<]*>)/g, '<span style="color:#FAB387">$1</span>');
+  return (
+    <div style={{ position: "relative", margin: "10px 0" }}>
+      <pre style={{ background: "#1E1E2E", borderRadius: 10, padding: "14px 16px 14px 16px", fontFamily: "'Fira Code',monospace,monospace", fontSize: 12.5, lineHeight: 1.9, color: "#CDD6F4", overflowX: "auto", margin: 0 }}
+        dangerouslySetInnerHTML={{ __html: hi }} />
+      <button onClick={copy} style={{ position: "absolute", top: 8, right: 8, fontSize: 11, padding: "3px 10px", borderRadius: 6, border: "0.5px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.08)", color: "#BAC2DE", cursor: "pointer" }}>
+        {copied ? "✓ copied" : "copy"}
+      </button>
+    </div>
+  );
+}
+
+// ─── PAGES ───────────────────────────────────────────────────────────────────
+
+function LessonPage({ course, lesson, completed, onMarkDone, onNext, onBack, hasNext }) {
+  const done = !!completed[lesson.id];
+  return (
+    <div style={{ fontFamily: "system-ui,sans-serif", maxWidth: 700, margin: "0 auto", padding: "0 4px 48px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "16px 0 12px", borderBottom: "0.5px solid #e5e5e5", marginBottom: 22 }}>
+        <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, padding: 0, color: "#555", lineHeight: 1 }}>←</button>
+        <span style={{ fontSize: 13, color: "#888" }}>{course.icon} {course.title}</span>
+        {done && <span style={{ marginLeft: "auto", fontSize: 12, background: "#E1F5EE", color: "#085041", borderRadius: 20, padding: "3px 10px", fontWeight: 500 }}>✓ पूरा</span>}
+      </div>
+      <h2 style={{ fontSize: 20, fontWeight: 600, color: "#1a1a1a", marginBottom: 10 }}>{lesson.title}</h2>
+      <p style={{ fontSize: 14.5, color: "#555", lineHeight: 1.75, marginBottom: 4 }}>{lesson.content}</p>
+      <CodeBlock code={lesson.code} />
+      {lesson.tip && (
+        <div style={{ background: "#E1F5EE", borderRadius: 10, padding: "11px 14px", fontSize: 13, color: "#0F6E56", margin: "14px 0 22px", lineHeight: 1.6 }}>
+          💡 {lesson.tip}
+        </div>
+      )}
+      <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+        {!done && (
+          <button onClick={() => onMarkDone(lesson.id)}
+            style={{ flex: 1, padding: "13px 0", background: course.color, color: "white", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 500, cursor: "pointer" }}>
+            ✓ पूरा किया
+          </button>
+        )}
+        {hasNext && (
+          <button onClick={onNext}
+            style={{ flex: 1, padding: "13px 0", background: done ? course.color : "transparent", color: done ? "white" : course.color, border: `1.5px solid ${course.color}`, borderRadius: 10, fontSize: 14, fontWeight: 500, cursor: "pointer" }}>
+            अगला →
+          </button>
+        )}
+        {!hasNext && done && (
+          <button onClick={onBack}
+            style={{ flex: 1, padding: "13px 0", background: "#534AB7", color: "white", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 500, cursor: "pointer" }}>
+            ← Course पर वापस
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CoursePage({ course, completed, onOpenLesson, onBack }) {
+  const done = course.lessons.filter(l => completed[l.id]).length;
+  return (
+    <div style={{ fontFamily: "system-ui,sans-serif", maxWidth: 700, margin: "0 auto", padding: "0 4px 48px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "16px 0 12px", borderBottom: "0.5px solid #e5e5e5", marginBottom: 20 }}>
+        <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, padding: 0, color: "#555", lineHeight: 1 }}>←</button>
+        <span style={{ fontSize: 22 }}>{course.icon}</span>
+        <span style={{ fontSize: 18, fontWeight: 600 }}>{course.title}</span>
+        <span style={{ marginLeft: "auto", fontSize: 13, color: "#888" }}>{done}/{course.lessons.length}</span>
+      </div>
+      <ProgressBar val={done} max={course.lessons.length} color={course.color} />
+      <div style={{ marginTop: 18, display: "flex", flexDirection: "column", gap: 10 }}>
+        {course.lessons.map((lesson, i) => {
+          const isDone = !!completed[lesson.id];
+          return (
+            <button key={lesson.id} onClick={() => onOpenLesson(lesson)}
+              style={{ display: "flex", alignItems: "center", gap: 14, padding: "15px 16px", background: isDone ? course.bg : "white", border: `0.5px solid ${isDone ? course.color + "55" : "#e8e8e8"}`, borderRadius: 12, cursor: "pointer", textAlign: "left", transition: "all 0.15s" }}>
+              <div style={{ width: 34, height: 34, borderRadius: "50%", background: isDone ? course.color : "#f0f0f0", color: isDone ? "white" : "#888", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 600, flexShrink: 0 }}>
+                {isDone ? "✓" : i + 1}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14, fontWeight: 500, color: "#1a1a1a", marginBottom: 3 }}>{lesson.title}</div>
+                <div style={{ fontSize: 12, color: "#888", lineHeight: 1.4 }}>{lesson.content.slice(0, 70)}…</div>
+              </div>
+              <span style={{ color: course.color, fontSize: 20, fontWeight: 300 }}>›</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function QuizPage({ onBack }) {
+  const [idx, setIdx] = useState(0);
+  const [answered, setAnswered] = useState({});
+  const [score, setScore] = useState(0);
+  const [done, setDone] = useState(false);
+
+  const answer = (i) => {
+    if (answered[idx] !== undefined) return;
+    const correct = i === QUIZ[idx].ans;
+    setAnswered(p => ({ ...p, [idx]: i }));
+    if (correct) setScore(s => s + 1);
+  };
+
+  const next = () => {
+    if (idx < QUIZ.length - 1) setIdx(i => i + 1);
+    else setDone(true);
+  };
+
+  const restart = () => { setIdx(0); setAnswered({}); setScore(0); setDone(false); };
+
+  if (done) {
+    const pct = Math.round((score / QUIZ.length) * 100);
+    const msg = score >= 18 ? "🏆 Master!" : score >= 15 ? "🎉 शानदार!" : score >= 12 ? "👍 अच्छा!" : score >= 8 ? "📚 और पढ़ो" : "🔄 Revise करो";
+    return (
+      <div style={{ fontFamily: "system-ui,sans-serif", maxWidth: 700, margin: "0 auto", padding: "32px 4px 48px", textAlign: "center" }}>
+        <div style={{ fontSize: 60, marginBottom: 12 }}>{msg.split(" ")[0]}</div>
+        <div style={{ fontSize: 26, fontWeight: 600, marginBottom: 6 }}>{msg.split(" ").slice(1).join(" ")}</div>
+        <div style={{ fontSize: 16, color: "#666", marginBottom: 28 }}>
+          {QUIZ.length} में से <strong style={{ color: "#534AB7" }}>{score}</strong> सही
+        </div>
+        <div style={{ background: "#EEEDFE", borderRadius: 16, padding: "20px 32px", display: "inline-block", marginBottom: 28 }}>
+          <div style={{ fontSize: 52, fontWeight: 700, color: "#534AB7" }}>{pct}%</div>
+          <div style={{ fontSize: 13, color: "#7F77DD" }}>Score</div>
+        </div>
+        <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+          <button onClick={restart} style={{ padding: "12px 24px", background: "#534AB7", color: "white", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 500, cursor: "pointer" }}>फिर से दो</button>
+          <button onClick={onBack} style={{ padding: "12px 24px", background: "white", color: "#534AB7", border: "1.5px solid #534AB7", borderRadius: 10, fontSize: 14, fontWeight: 500, cursor: "pointer" }}>🏠 Home</button>
+        </div>
+      </div>
+    );
+  }
+
+  const q = QUIZ[idx];
+  const isAnswered = answered[idx] !== undefined;
+
+  return (
+    <div style={{ fontFamily: "system-ui,sans-serif", maxWidth: 700, margin: "0 auto", padding: "0 4px 48px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "16px 0 12px", borderBottom: "0.5px solid #e5e5e5", marginBottom: 20 }}>
+        <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, padding: 0, color: "#555", lineHeight: 1 }}>←</button>
+        <span style={{ fontSize: 15, fontWeight: 500 }}>🧠 Quiz</span>
+        <span style={{ marginLeft: "auto", fontSize: 13, color: "#888" }}>{idx + 1} / {QUIZ.length}</span>
+      </div>
+      <ProgressBar val={idx + 1} max={QUIZ.length} color="#534AB7" />
+      <div style={{ margin: "22px 0 18px", fontSize: 16.5, fontWeight: 500, lineHeight: 1.6, color: "#1a1a1a" }}>{q.q}</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {q.opts.map((opt, i) => {
+          let bg = "white", border = "#e5e5e5", color = "#1a1a1a", fw = 400;
+          if (isAnswered) {
+            if (i === q.ans) { bg = "#E1F5EE"; border = "#1D9E75"; color = "#085041"; fw = 500; }
+            else if (i === answered[idx]) { bg = "#FCEBEB"; border = "#E24B4A"; color = "#501313"; }
+          }
+          return (
+            <button key={i} onClick={() => answer(i)}
+              style={{ padding: "13px 16px", background: bg, border: `1.5px solid ${border}`, borderRadius: 10, textAlign: "left", fontSize: 14, color, cursor: isAnswered ? "default" : "pointer", fontWeight: fw, transition: "all 0.15s", display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ width: 24, height: 24, borderRadius: "50%", background: isAnswered && i === q.ans ? "#1D9E75" : isAnswered && i === answered[idx] && i !== q.ans ? "#E24B4A" : "#f0f0f0", color: isAnswered && (i === q.ans || i === answered[idx]) ? "white" : "#888", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 600, flexShrink: 0 }}>
+                {isAnswered && i === q.ans ? "✓" : isAnswered && i === answered[idx] && i !== q.ans ? "✗" : String.fromCharCode(65 + i)}
+              </span>
+              {opt}
+            </button>
+          );
+        })}
+      </div>
+      {isAnswered && (
+        <button onClick={next}
+          style={{ marginTop: 20, width: "100%", padding: "13px 0", background: "#534AB7", color: "white", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 500, cursor: "pointer" }}>
+          {idx < QUIZ.length - 1 ? "अगला सवाल →" : "Result देखो 🎉"}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function CheatsheetPage({ onBack }) {
+  const sections = [
+    { title: "🐼 Pandas Basics", items: [
+      ["import pandas as pd", "pandas import करना"],
+      ["pd.Series([1,2,3])", "Series बनाना"],
+      ["pd.DataFrame(data)", "DataFrame बनाना"],
+      ["df.head() / df.tail()", "पहली/आखिरी rows"],
+      ["df.shape", "(rows, columns)"],
+      ["df.info()", "column types और null count"],
+      ["df.describe()", "statistical summary"],
+      ["df['col']", "एक column select"],
+      ["df[['c1','c2']]", "multiple columns"],
+      ["df.iloc[0]", "row by position"],
+      ["df.loc[label]", "row by label"],
+      ["df.dropna()", "null rows हटाना"],
+      ["df.fillna(0)", "null को 0 से भरना"],
+      ["df.to_csv('f.csv', index=False)", "CSV save करना"],
+    ]},
+    { title: "🔀 Sorting & Merge", items: [
+      ["df.sort_values('col')", "column से ascending sort"],
+      ["df.sort_values('col', ascending=False)", "descending sort"],
+      ["df.sort_values(['c1','c2'])", "multiple columns"],
+      ["df.sort_index()", "index से sort"],
+      ["pd.merge(df1, df2, on='id')", "inner join"],
+      ["pd.merge(..., how='left')", "left join"],
+      ["pd.merge(..., how='outer')", "outer join"],
+      ["pd.concat([df1, df2])", "vertically stack"],
+      ["pd.concat([df1, df2], axis=1)", "horizontally stack"],
+      ["df.drop_duplicates()", "duplicates हटाना"],
+    ]},
+    { title: "📊 Pivot Table", items: [
+      ["df.pivot_table(values, index, columns, aggfunc)", "basic pivot"],
+      ["aggfunc='sum'/'mean'/'count'", "aggregate function"],
+      ["fill_value=0", "NaN को 0 से भरो"],
+      ["margins=True", "Grand Total जोड़ो"],
+      ["pd.crosstab(df['a'], df['b'])", "count/frequency"],
+      ["normalize='index'", "row-wise percentage"],
+    ]},
+    { title: "⚡ apply() & Lambda", items: [
+      ["lambda x: x*2", "one-liner function"],
+      ["df['col'].apply(lambda x: ...)", "column पर apply"],
+      ["df.apply(lambda row: ..., axis=1)", "row-wise apply"],
+      ["df['col'].map({'A':'Excellent'})", "values replace"],
+      ["df['col'] * 1.18", "vectorized (faster)"],
+    ]},
+    { title: "📈 Matplotlib", items: [
+      ["df.plot(kind='line')", "line graph"],
+      ["df.plot(kind='bar')", "bar chart"],
+      ["df.plot(kind='scatter', x, y)", "scatter plot"],
+      ["plt.title('Title')", "title लगाना"],
+      ["plt.savefig('f.png', dpi=150)", "file save करना"],
+      ["plt.tight_layout()", "overlap ठीक करना"],
+      ["plt.show()", "graph दिखाना"],
+    ]},
+    { title: "🎨 Seaborn", items: [
+      ["sns.set_theme(style='whitegrid')", "theme set करना"],
+      ["sns.histplot(data=df, x='col')", "distribution"],
+      ["sns.boxplot(data=df, x, y, hue)", "boxplot"],
+      ["sns.barplot(data=df, x, y)", "category avg"],
+      ["sns.scatterplot(data=df, x, y, hue)", "scatter"],
+      ["sns.regplot(data=df, x, y)", "scatter + trend line"],
+      ["sns.heatmap(df.corr(), annot=True)", "correlation heatmap"],
+      ["sns.pairplot(df, hue='col')", "all pairs (EDA)"],
+    ]},
+  ];
+  return (
+    <div style={{ fontFamily: "system-ui,sans-serif", maxWidth: 700, margin: "0 auto", padding: "0 4px 48px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "16px 0 12px", borderBottom: "0.5px solid #e5e5e5", marginBottom: 20 }}>
+        <button onClick={onBack} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 22, padding: 0, color: "#555", lineHeight: 1 }}>←</button>
+        <span style={{ fontSize: 18, fontWeight: 600 }}>⚡ Quick Cheatsheet</span>
+      </div>
+      {sections.map(sec => (
+        <div key={sec.title} style={{ marginBottom: 20, border: "0.5px solid #e5e5e5", borderRadius: 12, overflow: "hidden" }}>
+          <div style={{ background: "#f8f8f8", padding: "10px 16px", fontSize: 13, fontWeight: 600, color: "#333", borderBottom: "0.5px solid #e5e5e5" }}>{sec.title}</div>
+          {sec.items.map(([cmd, desc]) => (
+            <div key={cmd} style={{ display: "flex", alignItems: "center", padding: "9px 16px", borderBottom: "0.5px solid #f2f2f2", gap: 12, flexWrap: "wrap" }}>
+              <code style={{ fontSize: 12, fontFamily: "'Fira Code',monospace", color: "#534AB7", background: "#EEEDFE", padding: "2px 8px", borderRadius: 6, flexShrink: 0 }}>{cmd}</code>
+              <span style={{ fontSize: 13, color: "#666" }}>{desc}</span>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── MAIN APP ────────────────────────────────────────────────────────────────
+
+export default function App() {
+  const [page, setPage] = useState("home");
+  const [activeCourse, setActiveCourse] = useState(null);
+  const [activeLesson, setActiveLesson] = useState(null);
+  const [completed, setCompleted] = useState({});
+
+  const markDone = (id) => setCompleted(p => ({ ...p, [id]: true }));
+
+  const totalLessons = COURSES.reduce((s, c) => s + c.lessons.length, 0);
+  const doneLessons = Object.keys(completed).length;
+  const pct = Math.round((doneLessons / totalLessons) * 100);
+
+  const openLesson = (course, lesson) => {
+    setActiveCourse(course); setActiveLesson(lesson); setPage("lesson");
+  };
+
+  const nextLesson = () => {
+    const ci = COURSES.findIndex(c => c.id === activeCourse.id);
+    const li = activeCourse.lessons.findIndex(l => l.id === activeLesson.id);
+    if (li < activeCourse.lessons.length - 1) {
+      setActiveLesson(activeCourse.lessons[li + 1]);
+    } else if (ci < COURSES.length - 1) {
+      const nc = COURSES[ci + 1];
+      setActiveCourse(nc); setActiveLesson(nc.lessons[0]);
+    } else {
+      setPage("course");
+    }
+  };
+
+  const hasNext = () => {
+    if (!activeCourse || !activeLesson) return false;
+    const ci = COURSES.findIndex(c => c.id === activeCourse.id);
+    const li = activeCourse.lessons.findIndex(l => l.id === activeLesson.id);
+    return li < activeCourse.lessons.length - 1 || ci < COURSES.length - 1;
+  };
+
+  if (page === "lesson" && activeCourse && activeLesson) {
+    return <LessonPage course={activeCourse} lesson={activeLesson} completed={completed}
+      onMarkDone={markDone} onNext={nextLesson} hasNext={hasNext()}
+      onBack={() => setPage("course")} />;
+  }
+  if (page === "course" && activeCourse) {
+    return <CoursePage course={activeCourse} completed={completed}
+      onOpenLesson={(l) => openLesson(activeCourse, l)} onBack={() => setPage("home")} />;
+  }
+  if (page === "quiz") return <QuizPage onBack={() => setPage("home")} />;
+  if (page === "cheatsheet") return <CheatsheetPage onBack={() => setPage("home")} />;
+
+  // ── HOME ──
+  return (
+    <div style={{ fontFamily: "system-ui,sans-serif", maxWidth: 700, margin: "0 auto", padding: "0 4px 48px" }}>
+      {/* Header */}
+      <div style={{ padding: "20px 0 16px", borderBottom: "0.5px solid #e8e8e8", marginBottom: 20, display: "flex", alignItems: "center", gap: 12 }}>
+        <span style={{ fontSize: 32 }}>🐼</span>
+        <div>
+          <div style={{ fontSize: 21, fontWeight: 700, color: "#1a1a1a" }}>Pandas LMS</div>
+          <div style={{ fontSize: 13, color: "#888" }}>Data Analysis सीखो — हिंदी में · {totalLessons} Lessons · 20 Quiz</div>
+        </div>
+      </div>
+
+      {/* Progress */}
+      <div style={{ background: "#EEEDFE", borderRadius: 14, padding: "16px 18px", marginBottom: 18 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+          <span style={{ fontSize: 13, fontWeight: 500, color: "#534AB7" }}>कुल Progress</span>
+          <span style={{ fontSize: 13, color: "#534AB7", fontWeight: 600 }}>{doneLessons}/{totalLessons} • {pct}%</span>
+        </div>
+        <ProgressBar val={doneLessons} max={totalLessons} color="#534AB7" />
+        {doneLessons === totalLessons && doneLessons > 0 && (
+          <div style={{ marginTop: 8, fontSize: 13, color: "#534AB7", fontWeight: 500 }}>🎉 सभी lessons पूरे! Quiz देने का समय!</div>
+        )}
+      </div>
+
+      {/* Courses Grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 14 }}>
+        {COURSES.map(course => {
+          const done = course.lessons.filter(l => completed[l.id]).length;
+          return (
+            <button key={course.id} onClick={() => { setActiveCourse(course); setPage("course"); }}
+              style={{ background: "white", border: "0.5px solid #e5e5e5", borderRadius: 14, padding: "16px 14px", textAlign: "left", cursor: "pointer" }}>
+              <div style={{ fontSize: 28, marginBottom: 8 }}>{course.icon}</div>
+              <div style={{ fontSize: 13.5, fontWeight: 600, color: "#1a1a1a", marginBottom: 3 }}>{course.title}</div>
+              <div style={{ fontSize: 12, color: "#aaa", marginBottom: 10 }}>{course.lessons.length} lessons</div>
+              <ProgressBar val={done} max={course.lessons.length} color={course.color} />
+              <div style={{ fontSize: 11, color: "#bbb", marginTop: 5 }}>{done}/{course.lessons.length} पूरे</div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Quiz Banner */}
+      <button onClick={() => setPage("quiz")}
+        style={{ width: "100%", background: "linear-gradient(135deg,#534AB7 0%,#7F77DD 100%)", border: "none", borderRadius: 14, padding: "17px 20px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer", textAlign: "left", marginBottom: 10 }}>
+        <span style={{ fontSize: 34 }}>🧠</span>
+        <div>
+          <div style={{ fontSize: 15, fontWeight: 600, color: "white", marginBottom: 2 }}>Quiz दो!</div>
+          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.75)" }}>20 सवाल — सारे topics cover</div>
+        </div>
+        <span style={{ marginLeft: "auto", color: "rgba(255,255,255,0.6)", fontSize: 22 }}>›</span>
+      </button>
+
+      {/* Cheatsheet */}
+      <button onClick={() => setPage("cheatsheet")}
+        style={{ width: "100%", background: "white", border: "0.5px solid #e5e5e5", borderRadius: 14, padding: "15px 20px", display: "flex", alignItems: "center", gap: 14, cursor: "pointer", textAlign: "left" }}>
+        <span style={{ fontSize: 30 }}>⚡</span>
+        <div>
+          <div style={{ fontSize: 15, fontWeight: 600, color: "#1a1a1a", marginBottom: 2 }}>Quick Cheatsheet</div>
+          <div style={{ fontSize: 13, color: "#888" }}>सारे important commands एक जगह</div>
+        </div>
+        <span style={{ marginLeft: "auto", color: "#aaa", fontSize: 22 }}>›</span>
+      </button>
+    </div>
+  );
+}
