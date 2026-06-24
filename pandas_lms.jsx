@@ -1,4 +1,4 @@
-import { useState } from "react";
+const { useState } = React;
 
 // ─── ALL COURSES & LESSONS FROM CONVERSATION ───────────────────────────────
 
@@ -18,7 +18,7 @@ import pandas as pd
 import numpy as np
 
 # pandas को हमेशा pd नाम से import करते हैं — यह convention है`,
-        tip: "pandas को हमेशा pd नाम से import करते हैं — यह standard convention है।"
+        tip: "pandas को always pd नाम से import करते हैं — यह standard convention है।"
       },
       {
         id: "1-2", title: "Series — 1D Data Structure",
@@ -692,10 +692,10 @@ df.applymap(lambda x: str(x).upper())
 # map()     → सिर्फ Series, values replace
 # df.map()  → पूरा DataFrame, हर cell पर same function
 
-# Performance tip:
-# यह SLOW है:
+// Performance tip:
+// यह SLOW है:
 df['total'] = df['price'].apply(lambda x: x * 1.18)
-# यह FAST है (vectorized):
+// यह FAST है (vectorized):
 df['total'] = df['price'] * 1.18`,
         tip: "Simple math के लिए apply() की जरूरत नहीं — सीधे arithmetic operation ज्यादा fast।"
       },
@@ -849,7 +849,7 @@ plt.show()
       },
       {
         id: "6-6", title: "Themes, Colors और Styling",
-        content: "Seaborn में built-in themes से एक line में पूरा look बदलो।",
+        content: "Seaborn में built-in themes से एक line में पूरा look बदलें।",
         code:
 `# 5 built-in themes
 sns.set_theme(style='darkgrid')    # dark background + grid
@@ -1190,7 +1190,7 @@ function CheatsheetPage({ onBack }) {
 
 // ─── MAIN APP ────────────────────────────────────────────────────────────────
 
-export default function App() {
+function App() {
   const [page, setPage] = useState("home");
   const [activeCourse, setActiveCourse] = useState(null);
   const [activeLesson, setActiveLesson] = useState(null);
@@ -1303,3 +1303,7 @@ export default function App() {
     </div>
   );
 }
+
+// React ऐप को DOM में रेंडर करना
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
